@@ -27,20 +27,38 @@ colnames(df) <- c(
     "class"   # 19 Class label. 1 = contains signs of DR, 0 = no signs of DR
 )
 
-#Eliminar datos con de baja calidad. (q = 0)
-bool.values <- df$q==0
-df <- df[!bool.values,]
 
-#Para confirmar si se eliminaron.
-sum(df$q==0)
 
-# Media ; Mediana; 1Q ; 3Q; Max; Min
-summary(df)
-
-#Determinar missing values
+########### Determinar missing values
 #sapply(df, function(x) sum(is.na(x)))
 sum(df$q==1)
 
+
+########### Eliminacion de valores de baja calidad
+#Identificar valores q == 0, y eliminarlos.
+bool.values <- df$q==0
+df <- df[!bool.values,]
+#Para confirmar si se eliminaron.
+sum(df$q==0)
+
+
+########### Se convierten en factor las variables binarias.
+df$q <- factor(df$q)
+df$ps <- factor(df$ps)
+df$amfm <- factor(df$amfm)
+df$class <- factor(df$class)
+
+########### Se pasan a numericos los valores q; ps; amfm
+df$q <- as.numeric(df$q)
+df$ps <- as.numeric(df$ps)
+df$amfm <- as.numeric(df$amfm)
+
+############ Medidas de centralizacion 
+# Media ; Mediana; 1Q ; 3Q; Max; Min
+summary(df)
+
+
+############ Grafico de torta
 ## Create a frequency table
 df.table <- table(df$class)
 colors <- terrain.colors(2) 
@@ -59,18 +77,20 @@ pie(class.prop.table,
   cex=0.8, 
   main="Frecuencia de la clase")
 
-install.packages('reshape')
 
+############ Grafico de cajas
+#install.packages('reshape')
+#install.packages('ggplot2')
 library(reshape)
-
-#Grafico de cajas
+library(ggplot2)
 long = melt(df[,c(1:ncol(df)-1)])
-
 ggplot(long) + 
     geom_boxplot(aes(variable, value)) + 
     coord_flip() +
     labs(title="Unimodal feature distribution", x='Feature', y='Scaled value')
 
+
+############ Matriz de covarianza
 #install.packages('ggplot2')
 #install.packages("GGally")
 library(GGally)
@@ -78,22 +98,24 @@ library(ggplot2)
 ggcorr(df) + 
     labs(title="Feature covariance matrix")
 
-#Distribucion dispersion
+############ Dstribucion de dispersion
 #install.packages('GGally')
-library(GGally)
+ggplot(df, aes(x = nma.a, y = nma.b, color=class))+ facet_wrap(~amfm)+
+  geom_point()+
+  geom_smooth(method=lm)
 
-df$q <- factor(df$q)
-df$ps <- factor(df$ps)
-df$amfm <- factor(df$amfm)
-df$class <- factor(df$class)
 
-df$q <- as.numeric(df$q)
-df$ps <- as.numeric(df$ps)
-df$amfm <- as.numeric(df$amfm)
-df$class <- as.numeric(df$class)
 
-ggpairs(df, aes(colour=class, alpha=0.4))
+############ Grafico de correlacion
+#install.packages('corrplot')
+library(corrplot)
+corrplot(df, type = "upper", order = "hclust", 
+         p.mat = p.mat, sig.level = 0.01)
 
+
+
+########## Codigo del profe.
+#corrplot(df, p.mat = res1$p, sig.level = .05)
 require(mclust)
 mod1 = Mclust(iris[,1:4]) #DEFAULT 
 summary(mod1)
@@ -132,3 +154,10 @@ plot(mod12, what = "classification")  #se grafica la configuración de agrupamie
 legend("bottomright", legend = 1:3,
        col = mclust.options("classPlotColors"),
        pch = mclust.options("classPlotSymbols"),title = "Class labels:")
+
+# calculate collinearity
+corMatMy <- cor(bc_data[,2:31])
+corrplot(corMatMy, order = "hclust", tl.cex = 0.7)
+
+
+
