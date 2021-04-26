@@ -27,32 +27,36 @@ colnames(df) <- c(
     "class"   # 19 Class label. 1 = contains signs of DR, 0 = no signs of DR
 )
 
+numericFeats = c(3:16)
+eyeFeats = c(17,18)
+df.normalizado <- df
+df.normalizado[, c(numericFeats, eyeFeats)] = scale(df[, c(numericFeats, eyeFeats)])
+df.normalizado$class = as.factor(df.normalizado$class)
 
-
-########### Determinar missing values
+########### Determinar datos con baja calidad.
 #sapply(df, function(x) sum(is.na(x)))
-sum(df$q==1)
+sum(df$q==0)
 
 
 ########### Eliminacion de valores de baja calidad
 #Identificar valores q == 0, y eliminarlos.
-bool.values <- df$q==0
-df <- df[!bool.values,]
+#bool.values <- df$q==0
+#df <- df[!bool.values,]
 #Para confirmar si se eliminaron.
-sum(df$q==0)
+#sum(df$q==0)
 
 
 ########### Se convierten en factor las variables binarias.
-df$q <- factor(df$q)
-df$ps <- factor(df$ps)
-df$amfm <- factor(df$amfm)
+#df$q <- factor(df$q)
+#df$ps <- factor(df$ps)
+#df$amfm <- factor(df$amfm)
 df$class <- factor(df$class)
 
 ########### Se pasan a numericos los valores q; ps; amfm
 df$q <- as.numeric(df$q)
 df$ps <- as.numeric(df$ps)
 df$amfm <- as.numeric(df$amfm)
-
+df$class <- as.numeric(df$class)
 ############ Medidas de centralizacion 
 # Media ; Mediana; 1Q ; 3Q; Max; Min
 summary(df)
@@ -83,12 +87,12 @@ pie(class.prop.table,
 #install.packages('ggplot2')
 library(reshape)
 library(ggplot2)
-long = melt(df[,c(1:ncol(df)-1)])
+long = melt(df.normalizado[,c(1:ncol(df.normalizado)-1)])
+
 ggplot(long) + 
     geom_boxplot(aes(variable, value)) + 
     coord_flip() +
     labs(title="Unimodal feature distribution", x='Feature', y='Scaled value')
-
 
 ############ Matriz de covarianza
 #install.packages('ggplot2')
@@ -100,28 +104,76 @@ ggcorr(df) +
 
 ############ Dstribucion de dispersion
 #install.packages('GGally')
-ggplot(df, aes(x = nma.a, y = nma.b, color=class))+ facet_wrap(~amfm)+
+ggplot(df.normalizado, aes(x = nma.a, y = nma.b, color=class))+ facet_wrap(~amfm)+
   geom_point()+
   geom_smooth(method=lm)
 
+nrow(df)
 
 
 ############ Grafico de correlacion
 #install.packages('corrplot')
 library(corrplot)
-corrplot(df, type = "upper", order = "hclust", 
-         p.mat = p.mat, sig.level = 0.01)
+
+p.mat <- cor.mtest(df, conf.level = .95)
+M <- cor(df)
+
+corrplot(M, type = "upper", order = "hclust", 
+         p.mat = p.mat$p, sig.level = 0.01)
+
+#Para el informe
+col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+corrplot(M, method = "color", col = col(200),
+         type = "upper", order = "hclust", number.cex = .7,
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col = "black", tl.srt = 90, # Text label color and rotation
+         # Combine with significance
+         p.mat = p.mat$p, sig.level = 0.01, insig = "blank", 
+         # hide correlation coefficient on the principal diagonal
+         diag = FALSE)
+
+
+boxplot.width =  ggboxplot(data = df, x = "class", y = "width", color = "class") + border()
+
+
+#GRAFICOS DE DISTRIBUCIOB
+
+ggplot(df.normalizado, aes(x = nex.a, y = nma.a, color=class))+ facet_wrap(~amfm)+
+  geom_point()
+
+ggplot(df.normalizado, aes(x = nex.b, y = nma.b, color=class))+ facet_wrap(~amfm)+
+  geom_point()
+
+ggplot(df.normalizado, aes(x = nex.c, y = nma.c, color=class))+ facet_wrap(~amfm)+
+  geom_point()
+
+ggplot(df.normalizado, aes(x = nex.d, y = nma.d, color=class))+ facet_wrap(~amfm)+
+  geom_point()
+
+ggplot(df.normalizado, aes(x = nex.e, y = nma.e, color=class))+ facet_wrap(~amfm)+
+  geom_point()
+
+ggplot(df.normalizado, aes(x = nex.f, y = nma.f, color=class))+ facet_wrap(~amfm)+
+  geom_point()
+
+#No se ve ninguna relacion a simple vista; Es necesario ustilizar una agrupacion por modelo
+
 
 
 
 ########## Codigo del profe.
 #corrplot(df, p.mat = res1$p, sig.level = .05)
 require(mclust)
-mod1 = Mclust(iris[,1:4]) #DEFAULT 
+
+
+mod1 = Mclust(df[,1:19]) #DEFAULT 
 summary(mod1)
 
-mod2 = Mclust(iris[,1:4], G = 3)  #Numero de grupos = 3.
-summary(mod2, parameters = TRUE)
+
+mod3 = Mclust(df[,1:19], G = 10)  #Numero de grupos = 3.
+summary(mod3)
+
+
 
 mod6 = Mclust(iris[,1:4], prior = priorControl(functionName="defaultPrior", shrinkage=0.1), modelNames ="EII")  
 #"EII" = spherical, equal volume # Using prior #The function priorControl is used to specify a conjugate prior for EM within MCLUST. 
