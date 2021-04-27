@@ -72,7 +72,7 @@ summary(df)
 #Comportamientos de todos los nma son similares con direntes rangos de confianza
 #a medida que aumenta el alpha se ve una reduccion en el valor de los datos
 #La distribucion de los datos se mostrara mas adelante.
-
+#No hay mucha informacion de los valores binarios.
 
 ############ Grafico de torta
 ## Create a frequency table
@@ -109,9 +109,8 @@ ggplot(long) +
     coord_flip() +
     labs(title="Unimodal feature distribution", x='Feature', y='Scaled value')
 
-#Se puede ver que todos los valores nex tienen a tener una gran cantidad de datos sesgados y 
-#una considerable cantidad de valores atipicos en la parte derecha de la caja
-#Se puede apreciar que los exudados presentan los valores mas sesgados, sobretodo desde nex.d.
+#Se puede ver que todos los valores nex (cantidad de exudados) tienen a tener una gran cantidad de datos sesgados y 
+#una considerable cantidad de valores atipicos en la parte derecha de la caja.
 #Esto nos da un indicio sobre el margen del nivel de confianza que es recomendable utilziar.
 # Se va reduciendo la caja a medida que aumenta el intervalo de confianza.
 
@@ -177,18 +176,8 @@ grid.arrange(p1, p2,p3,p4,p5,p6)
 
 
 ---
-
-
-
-#Estos graficos nos permiten analizar como se encuentra la distribucion de las variables nex y nma
-#para sus correspondientes niveles de confianza
-#nex f; tiene los datos muy condensarods para los diferentes valores de nma
-#tiene valores muchos mas acotados
-#el otro tiene mapas de calor mas disperso, entonces el rango en que se encuentra la correlacion de las variables es mayor.
-#Podemos ver que el grado de distribucion de los valores es muy disperso.
-
 #Dadas las distribuciones mostradas anteriormente y las correlaciones existentes entre los distintos niveles de ocnfianza de las
-#variables nma y nex, se decide utilizar ambas variables con un nivel de confianza de 0.7
+#variables nma y nex, se decide utilizar ambas variables con un nivel de confianza de 0.7.
 #Ahora vamos a mostrar las correlaciones resultantes, producto de la eliminacion de las variables rebundantes.
 
 #Matriz de correlacion para los datos con alpha = 0.7
@@ -208,9 +197,10 @@ corrplot(M, method = "color", col = col(200),
          # hide correlation coefficient on the principal diagonal
          diag = FALSE)
 
-# De forma preliminar podemos decir que existe una correlacion entre las varialbes que indican distancias, tal como dd y dm
-# Tambien se puede ver una fuerte correlacion negativa entre el valor de amfm y nma.c
-# cabe destacar que las correlaciones de la clase no la consideramos, ya que no tienene informacion relevante para el modelo.
+# De forma preliminar podemos decir que existe una correlacion entre las varialbes que indican 
+# distancias, tal como dd y dm. Tambien se puede ver una fuerte correlacion negativa entre el valor 
+# de amfm y nma.c cabe destacar que las correlaciones de la clase no la consideramos, ya que no 
+# tienene informacion relevante para el modelo.
 
 
 #Graficos de distribuones de los par de valores con correlaciones mas signficativas.
@@ -290,7 +280,7 @@ plot(BIC.09)
 
 #BIC  con alpha 1.0
 data.sinclass.10 <- datos.10[,-20]
-BIC.10 <- mclustBIC(data.sinclass.10)
+BIC.10 <- mclustBIC(data.sinclass.10,)
 summary(BIC.10)
 plot(BIC.10)
 # BIC = -2108.609
@@ -332,10 +322,6 @@ distribucion.clase
 table(class, modelo5$classification)
 
 
-#Se procede a generar el modelo utilizando el set de tatos que maximiza el BIC.
-modelo.07 = Mclust(data.sinclass.07, x = BIC.07)
-summary(modelo.07)
-
 #install.packages("factoextra")
 library(factoextra)
 
@@ -344,10 +330,10 @@ library(factoextra)
 #            pallete = "jco")
 
 #Mientrasn mas grande el punto; Mas le costo decidir la asignacion de grupo.
-fviz_mclust(modelo.07, what = "uncertainty", pallete = "jco")
+fviz_mclust(modelo1, what = "uncertainty", pallete = "jco")
 
 #Con esta tabla se conforman los valores de Sensibilidad y especificidad.
-table(class, modelo.07$classification)
+table(class, modelo1$classification)
 
 
 
