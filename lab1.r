@@ -25,12 +25,9 @@ colnames(df) <- c(
     "nex.h",  # 15 Numero de Exudates encontrados en un nivel de confianza con alpha = 1.0
     "dd",     # 16 Distancia eucladiana entre el centro de la macula y el centro del disco optico
     "dm",     # 17 Diametro del disco optico
-    "amfm",   # 18 Numeri binario, relacionado con la clasificacion AM/FM-based
+    "amfm",   # 18 Numeri binario, relacionado con la clasificacion AM/FM-based.
     "class"   # 19 Clase del dato, en donde 1 = contiene signos de DR, 0 = no contiene signos de DR.
 )
-
-#Se realiza una estanadarizacion de las observacion respecto a las varialbes. Esto se hace por separado en base a las 
-# dimenciones de las variables, para ser consecuente on los valores contemplados en las columnas.
 
 # Se relizo un escalado o normaliado de los datos para mejorar su representacion grafica, con tal facilitar su entendimiento.
 # Uno representa cantidad de exucdados y microneurismos encontrados.
@@ -39,14 +36,10 @@ valoresCantidad = c(3:16)
 valoresDistancia = c(17,18)
 
 #Este escalado se relaizao en separado dada la naturaleza de las variables
-
 df.normalizado <- df
 df.normalizado[, c(valoresCantidad, valoresDistancia)] = scale(df[, c(valoresCantidad, valoresDistancia)])
 df.normalizado$class = as.factor(df.normalizado$class)
 
-########### Determinar datos con baja calidad.
-#sapply(df, function(x) sum(is.na(x)))
-sum(df$q==0)
 
 ########### Se convierten en factor el valor binario de class.
 df$class <- factor(df$class)
@@ -313,25 +306,30 @@ distribucion.clase = c(casos0,casos1)
 
 #Se porceden a probar las difernetes formas que puede tomar el modelo, con tal de encontrar el que mas se adecue
 #al contexto de nuestro problema.
-modelo1 = Mclust(data.sinclass.07, G=2 ,prior = priorControl(functionName="defaultPrior", shrinkage=0.1), modelNames ="VEV")
+modelo1 = Mclust(data.sinclass.07 ,prior = priorControl(functionName="defaultPrior", shrinkage=0.1), modelNames ="VEV")
 summary(modelo1)
 distribucion.clase
+table(class, modelo1$classification)
 
-modelo2 = Mclust(data.sinclass.07, G=2 ,prior = priorControl(functionName="defaultPrior", shrinkage=0.1), modelNames ="EEV")
+modelo2 = Mclust(data.sinclass.07 ,prior = priorControl(functionName="defaultPrior", shrinkage=0.1), modelNames ="EEV")
 summary(modelo2)
 distribucion.clase
+table(class, modelo2$classification)
 
-modelo3 = Mclust(data.sinclass.07, G=2 ,prior = priorControl(functionName="defaultPrior", shrinkage=0.1), modelNames ="VEI")
+modelo3 = Mclust(data.sinclass.07 ,prior = priorControl(functionName="defaultPrior", shrinkage=0.1), modelNames ="VEI")
 summary(modelo3)
 distribucion.clase
+table(class, modelo3$classification)
 
 modelo4 = Mclust(data.sinclass.07 ,prior = priorControl(functionName="defaultPrior", shrinkage=0.1), modelNames ="EEI")
 summary(modelo4)
 distribucion.clase
+table(class, modelo4$classification)
 
-modelo5 = Mclust(data.sinclass.07, G=2 ,prior = priorControl(functionName="defaultPrior", shrinkage=0.1), modelNames ="EEE")
+modelo5 = Mclust(data.sinclass.07 ,prior = priorControl(functionName="defaultPrior", shrinkage=0.1), modelNames ="EEE")
 summary(modelo5)
 distribucion.clase
+table(class, modelo5$classification)
 
 
 #Se procede a generar el modelo utilizando el set de tatos que maximiza el BIC.
