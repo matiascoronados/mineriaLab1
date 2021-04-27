@@ -126,11 +126,6 @@ library(ggplot2)
 ggcorr(df) + 
     labs(title="Feature covariance matrix")
 
-############ Dstribucion de dispersion
-#install.packages('GGally')
-ggplot(df.normalizado, aes(x = nma.a, y = nma.b, color=class))+ facet_wrap(~amfm)+
-  geom_point()+
-  geom_smooth(method=lm)
 
 nrow(df)
 
@@ -179,6 +174,15 @@ ggplot(df.normalizado, aes(x = nex.e, y = nma.e, color=class))+ facet_wrap(~amfm
 
 ggplot(df.normalizado, aes(x = nex.f, y = nma.f, color=class))+ facet_wrap(~amfm)+
   geom_point()
+
+sp <- ggplot(df.normalizado, aes(x=nma.a, y=nex.a)) +
+  geom_point()
+  sp + geom_density_2d()
+  # Gradient color
+  sp + stat_density_2d(aes(fill = ..level..), geom="polygon")
+  # Change the gradient color
+  sp + stat_density_2d(aes(fill = ..level..), geom="polygon")+
+    scale_fill_gradient(low="blue", high="red")
 
 #No se ve ninguna relacion a simple vista; Es necesario ustilizar una agrupacion por modelo
 
